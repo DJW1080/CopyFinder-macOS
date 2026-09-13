@@ -1,0 +1,13 @@
+#!/usr/bin/python3
+"""Launch from either the installed package or the source directory."""
+import sys
+from pathlib import Path
+
+sys.dont_write_bytecode = True
+prefix = Path(__file__).resolve().parent.parent
+installed_library = prefix / 'lib' / 'copyfinder'
+sys.path.insert(0, str(installed_library if installed_library.is_dir() else prefix))
+
+from copyfinder.app import main
+
+raise SystemExit(main())

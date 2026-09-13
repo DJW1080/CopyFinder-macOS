@@ -1,0 +1,8 @@
+[project]
+name = "copyfinder-linux"
+version = "0.1.0"
+description = "Independently implemented native Linux Mint duplicate finder"
+requires-python = ">=3.10"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

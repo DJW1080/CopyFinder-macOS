@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=CopyFinder
+Comment=Find and review identical files
+Exec=copyfinder
+Icon=copyfinder
+Terminal=false
+Categories=Utility;FileTools;
+Keywords=duplicate;files;hash;cleanup;
+StartupNotify=true
+StartupWMClass=copyfinder
