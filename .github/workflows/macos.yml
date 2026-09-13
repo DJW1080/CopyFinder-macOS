@@ -1,51 +1,25 @@
-name: Build Intel macOS app
+name: Quick Intel macOS beta
+
 on:
   workflow_dispatch:
   push:
-    branches: [main, 'codex/**']
-  pull_request:
+    branches: [main]
+
 permissions:
   contents: read
+
 jobs:
-  intel:
+  build:
     runs-on: macos-15-intel
-    timeout-minutes: 360
-    env:
-      MACOSX_DEPLOYMENT_TARGET: '10.15'
-      GDK_BACKEND: macos
-      PYTHONPATH: ${{ github.workspace }}
+    timeout-minutes: 2
     steps:
       - uses: actions/checkout@v4
-      - name: Compile Catalina-targeted MacPorts dependencies
-        run: bash packaging/macos/provision.sh
-      - name: Record dependency provenance
-        run: |
-          mkdir -p build/macos-evidence
-          /opt/local/bin/port installed > build/macos-evidence/macports-installed.txt
-          cp /opt/local/etc/macports/macports.conf build/macos-evidence/
-          cp /opt/local/etc/macports/variants.conf build/macos-evidence/
-          sw_vers > build/macos-evidence/host.txt
-          xcodebuild -version >> build/macos-evidence/host.txt
-      - name: Shared and native platform tests
-        run: /opt/local/bin/python3.13 scripts/run_tests.py
-      - name: Freeze, audit, accept, and package app
-        run: /opt/local/bin/python3.13 scripts/build_macos.py
-      - name: Upload successful unsigned distribution
+      - name: Build, smoke check, and package
+        run: bash scripts/build_macos_fast.sh
+      - name: Upload beta package
         uses: actions/upload-artifact@v4
         with:
-          name: CopyFinder-macOS-x86_64
-          path: |
-            dist/macos/*.dmg
-            dist/macos/*.zip
-            dist/macos/*.json
-            dist/macos/SHA256SUMS
+          name: CopyFinder-macOS-0.1.0-beta.1
+          path: dist/macos/
           if-no-files-found: error
-      - name: Upload build evidence
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: macOS-build-evidence
-          path: |
-            build/macos-evidence/
-            build/macos/
-          if-no-files-found: ignore
+          retention-days: 7

@@ -1,91 +1,40 @@
 # CopyFinder for macOS
 
-CopyFinder is a duplicate-file review application with a native macOS build.
-It scans one chosen folder, groups only nonempty files with equal sizes and full
-SHA-256 hashes, lets you choose which copy to keep, exports the review, and moves
-approved duplicates to Trash after checking both files again.
+CopyFinder is a native macOS duplicate-file scanner written from scratch in Swift. It follows the established CopyFinder workflow while using Apple system frameworks for its interface, file access, SHA-256 comparison, Finder integration, and Trash.
 
-The first Mac target is a 64-bit Intel Mac running macOS Catalina 10.15.8.
-The downloadable app is being built and must pass its macOS build checks before
-it is described as Catalina-compatible. Apple Silicon packaging is planned after
-the Intel edition is accepted. The Linux Mint edition remains in the separate
-[CopyFinder-LinuxMint repository](https://github.com/DJW1080/CopyFinder-LinuxMint).
+This repository is the macOS application. The Linux Mint version remains in its own repository.
 
-## Contributors
+## Beta 1 target
 
-- **Dean John Weiniger (DJW1080)** — project creator and maintainer; requirements,
-  direction, Mac testing, and release approvals.
-- **OpenAI Codex** — AI development co-contributor for the independently written
-  Linux foundation and native macOS integration, tests, packaging, and documentation,
-  working under Dean's direction.
+- Intel Macs (`x86_64`)
+- macOS Catalina 10.15 or later
+- no Python, GTK, MacPorts, Homebrew, or third-party runtime
+- ad-hoc signed; no Apple Developer ID or notarization yet
 
-## Workflow
+## What it does
 
-Choose a folder, adjust Scan Settings if needed, and select Scan. One file per
-exact-duplicate group is kept; the other files are selected initially. Keep changes
-the protected file. Open reveals a file in Finder. Review the selections before
-choosing Delete Duplicates; a confirmation is always required.
+- scans a chosen folder and its subfolders
+- considers files duplicates only when size and SHA-256 content match
+- offers Original, Shortest name, Oldest file, Newest file, Folder, and Highest Resolution keep rules
+- lets you review groups, change the kept file, reveal files in Finder, and select duplicates
+- rechecks both files immediately before moving a selected duplicate to the macOS Trash
+- exports CSV or JSON reports
+- remembers scan settings locally
 
-The six keep choices are Original, Shortest name, Oldest file, Newest file, Folder,
-and Highest Resolution. Original is a filename preference, not proof of provenance.
-Oldest and Newest use modification time. Highest Resolution operates only within
-files already proven byte-for-byte equal; CopyFinder does not compare visual similarity.
+## Install the beta
 
-The default limit is 500 duplicate files, excluding the kept files. Reaching it
-means the scan stopped for review and later files may not have been evaluated.
-Inventory is temporary and disk-backed; only same-size candidates are hashed, with
-a bounded worker queue.
+Download the DMG from the GitHub release, open it, and drag `CopyFinder.app` to Applications. Because Beta 1 has no Developer ID signature, Catalina may require Control-clicking the app, choosing **Open**, and confirming once.
 
-## File safety
+## Build
 
-- Symlinks and special files are never hashed. A scan root with a symlink ancestor
-  is rejected; choose its real path.
-- Hard-link aliases count as one physical file. A candidate with another hard link
-  is refused because removing one name would not reclaim its contents.
-- Before Trash, the duplicate and keeper are checked against their scanned identity,
-  size, timestamps, and full hash. The keeper is checked again after the operation.
-- Finder and Foundation provide native reveal, volume classification, and Trash.
-  There is no permanent-delete fallback, permission repair, ownership change, or
-  elevated application helper.
-- A failed or uncertain operation leaves the review row in place. Check Trash and
-  rescan before trying again.
-
-Skip hidden files covers dotfiles and dot-directories. Skip system files excludes
-protected macOS locations while retaining user folders. Readable mounted folders can
-be scanned; CopyFinder warns about network storage before deletion when macOS can
-classify the volume.
-
-## Configuration and logs
-
-Settings are stored at
-`~/Library/Application Support/CopyFinder/settings.json`. Logs are stored at
-`~/Library/Logs/CopyFinder/copyfinder.log` and may contain filenames. Invalid settings
-are left untouched and reported. Settings and exported reports use atomic replacement.
-
-## Development and packaging
-
-Shared tests can be run on Linux with:
+On a Mac with Xcode command-line tools:
 
 ```sh
-make test
+make build
 ```
 
-The real app must be built on an Intel Mac environment prepared for a 10.15 deployment
-target:
+The build creates a DMG, ZIP, checksums, build details, and the result of one smoke test under `dist/macos/`. The build has a 110-second limit.
 
-```sh
-make package
-```
+## Status
 
-The build creates a standalone `.app`, `.dmg`, `.zip`, SHA-256 checksums, a native
-acceptance report, and an audit of every bundled Mach-O binary. See
-[the Mac build guide](docs/macos-build.md) for the exact gates and the Catalina test
-checklist.
-
-Initial builds use an ad hoc signature and are not notarized. A checksum identifies
-the downloaded bytes but is not a publisher signature. Developer ID signing and Apple
-notarization require credentials controlled by the project owner.
-
-The interface retains the CopyFinder layout and artwork. Window decorations, fonts,
-and file dialogs follow macOS. See [NOTICE.md](NOTICE.md) for source and artwork
-provenance.
+Beta 1 is intentionally an early real-hardware build. The automated check starts the compiled executable in smoke mode and confirms that it detects one duplicate pair. Catalina behavior is confirmed only after testing the published package on a Catalina Mac.

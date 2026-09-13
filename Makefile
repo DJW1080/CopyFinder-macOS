@@ -1,11 +1,4 @@
-PYTHON ?= python3
+.PHONY: build
 
-.PHONY: run test package
-run:
-	$(PYTHON) -m copyfinder
-
-test:
-	$(PYTHON) scripts/run_tests.py
-
-package:
-	$(PYTHON) scripts/build_macos.py
+build:
+	bash scripts/build_macos_fast.sh

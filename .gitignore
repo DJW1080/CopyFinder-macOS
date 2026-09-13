@@ -1,7 +1,6 @@
-__pycache__/
-*.pyc
-.pytest_cache/
-dist/
+.DS_Store
+.build/
 build/
+dist/
+*.dSYM/
 .superpowers/
-.venv/

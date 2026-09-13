@@ -1,8 +1,0 @@
-[project]
-name = "copyfinder-macos"
-version = "0.1.0"
-description = "CopyFinder duplicate review with native macOS integration"
-requires-python = ">=3.10"
-
-[tool.pytest.ini_options]
-testpaths = ["tests"]
