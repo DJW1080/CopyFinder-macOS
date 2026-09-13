@@ -1,6 +1,11 @@
-# CopyFinder Linux validation record
+# Shared Linux baseline validation record
 
-Target observed on 11 September 2026: Linux Mint 22.3 Cinnamon, X11, Python 3.12.3, GTK 4.14.5, PyGObject 3.48.2, Pillow 10.2.0. This is the local implementation matching the approved Windows 2.1.8 behavioural reference at commit `d90fa7b502326bfcac2df55fa1c87de2ed0e1543`.
+This record covers the shared implementation before its macOS integration. It is
+retained as Linux regression evidence and does not establish macOS compatibility.
+The observed target on 11 September 2026 was Linux Mint 22.3 Cinnamon, X11,
+Python 3.12.3, GTK 4.14.5, PyGObject 3.48.2, and Pillow 10.2.0. The implementation
+matches the approved Windows 2.1.8 behavioural reference at commit
+`d90fa7b502326bfcac2df55fa1c87de2ed0e1543`.
 
 ## Verified components
 
