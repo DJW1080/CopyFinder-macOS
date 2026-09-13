@@ -96,10 +96,18 @@ class ScannerTests(unittest.TestCase):
             self.skipTest("The test filesystem is case-insensitive")
         self.assertEqual(len(self.run_scan().groups[0].files), 2)
 
-    def test_unicode_newline_and_undecodable_filename(self):
+    def test_unicode_and_newline_filenames(self):
         self.write("café\nreport.txt")
+        self.write("café report.txt")
+        self.assertEqual(len(self.run_scan().groups[0].files), 2)
+
+    def test_undecodable_filename_when_supported(self):
         filename = os.fsdecode(b"raw-\xff.txt")
-        self.write(filename)
+        try:
+            self.write(filename)
+        except (OSError, UnicodeError) as error:
+            self.skipTest(f"The test filesystem rejects invalid UTF-8 filenames: {error}")
+        self.write("portable-name.txt")
         self.assertEqual(len(self.run_scan().groups[0].files), 2)
 
     def test_hard_links_do_not_count_as_reclaimable_duplicates(self):

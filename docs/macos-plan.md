@@ -12,12 +12,12 @@ Global constraints: preserve Linux behavior and existing release assets; retain
 all duplicate deletion safeguards; do not claim unperformed Mac checks; pause on
 any tool or test error under the user's AGENTS instructions.
 
-- [ ] Task 1: Implement native macOS desktop services and settings paths, with
+- [x] Task 1: Implement native macOS desktop services and settings paths, with
   tests for success, failure, remote-volume handling, and Linux dispatch.
   Own desktop.py, storage.py, macos.py and tests/test_macos.py.
-- [ ] Task 2: Make shared descriptor handling and runtime messages portable.
+- [x] Task 2: Make shared descriptor handling and runtime messages portable.
   Add meaningful cross-platform regression checks; retain Linux safeguards.
-- [ ] Task 3: Add architecture-specific macOS app/disk-image packaging and CI,
+- [x] Task 3: Add architecture-specific macOS app/disk-image packaging and CI,
   Catalina-compatible dependency installation, bundled-app acceptance, checksums
   and instructions. Inspect every bundled Mach-O minimum macOS version.
   Own packaging/macos, scripts/build_macos.py, scripts/macos_acceptance.py,

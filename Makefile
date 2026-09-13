@@ -5,7 +5,7 @@ run:
 	$(PYTHON) -m copyfinder
 
 test:
-	$(PYTHON) -m unittest discover -s tests -v
+	$(PYTHON) scripts/run_tests.py
 
 package:
 	$(PYTHON) scripts/build_macos.py

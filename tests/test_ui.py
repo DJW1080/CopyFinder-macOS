@@ -8,7 +8,7 @@ import tempfile
 import time
 import unittest
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 GTK_WAIT_SECONDS = 10
 GTK_POLL_SECONDS = 0.005
@@ -41,6 +41,45 @@ def image_record(path):
 
 
 class InterfaceTests(unittest.TestCase):
+    def test_report_export_shows_native_volume_error(self):
+        import gi
+        gi.require_version('Gtk', '4.0')
+        from copyfinder.desktop import DesktopIntegrationError
+        from copyfinder.window import MainWindow
+
+        destination = Mock()
+        destination.get_path.return_value = '/Volumes/Unavailable/report.csv'
+        dialog = Mock()
+        dialog.save_finish.return_value = destination
+        window = Mock()
+
+        with patch('copyfinder.window.build_csv',
+                   side_effect=DesktopIntegrationError('Volume could not be classified')):
+            MainWindow._export_chosen(window, dialog, object())
+
+        window.show_message.assert_called_once_with('Export failed: Volume could not be classified')
+
+    def test_compatibility_report_shows_native_service_error(self):
+        import gi
+        gi.require_version('Gtk', '4.0')
+        from copyfinder import VERSION
+        from copyfinder.desktop import DesktopIntegrationError
+        from copyfinder.window import MainWindow
+
+        window = Mock()
+        window._load_error = None
+        window.settings = {'compatibility_version': 'older-version'}
+
+        with patch('copyfinder.window.compatibility_report',
+                   side_effect=DesktopIntegrationError('Frameworks are unavailable')):
+            MainWindow.show_compatibility_once(window)
+
+        window.show_message.assert_called_once_with(
+            'Compatibility report unavailable: Frameworks are unavailable'
+        )
+        self.assertNotEqual(window.settings['compatibility_version'], VERSION)
+        window._save.assert_not_called()
+
     def test_delete_selection_stops_when_volume_classification_is_unavailable(self):
         import gi
         gi.require_version('Gtk', '4.0')

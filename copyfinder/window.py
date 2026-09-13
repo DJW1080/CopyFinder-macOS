@@ -396,7 +396,7 @@ class MainWindow(Gtk.ApplicationWindow):
         except GLib.Error as error:
             if not error.matches(Gtk.dialog_error_quark(), Gtk.DialogError.DISMISSED):
                 self.show_message(f'Export failed: {error.message}')
-        except (OSError, ValueError) as error:
+        except (DesktopIntegrationError, OSError, ValueError) as error:
             self.show_message(f'Export failed: {error}')
 
     def show_message(self, message):
@@ -406,7 +406,12 @@ class MainWindow(Gtk.ApplicationWindow):
         if self._load_error:
             self.show_message(f'Settings could not be loaded and have been left unchanged.\n\n{self._load_error}')
         elif self.settings.get('compatibility_version') != VERSION:
-            self.show_message(compatibility_report())
+            try:
+                report = compatibility_report()
+            except DesktopIntegrationError as error:
+                self.show_message(f'Compatibility report unavailable: {error}')
+                return
+            self.show_message(report)
             self.settings['compatibility_version'] = VERSION
             self._save()
 

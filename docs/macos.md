@@ -4,7 +4,8 @@
 
 The macOS edition retains the existing GTK 4 interface and independently written
 Python duplicate scanner. It adds native macOS services through PyObjC rather
-than emulating Linux desktop services. Linux packaging remains available.
+than emulating Linux desktop services. Linux packaging remains available in the
+separate `DJW1080/CopyFinder-LinuxMint` repository.
 
 Publication must use a separate GitHub repository, planned as
 `DJW1080/CopyFinder-macOS`, with its own build workflows and downloadable releases.
