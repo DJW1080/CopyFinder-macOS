@@ -119,7 +119,11 @@ final class AppModel: ObservableObject {
         if !previousKeeper.isEmpty {
             groups[index].selectedPaths.insert(previousKeeper)
         }
-        groups[index].files.sort { left, _ in left.path == path }
+        groups[index].files.sort { left, right in
+            if left.path == path { return true }
+            if right.path == path { return false }
+            return left.path < right.path
+        }
     }
 
     func selectAll() {

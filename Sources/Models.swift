@@ -6,7 +6,7 @@ let defaultDuplicateLimit = 500
 let maximumDuplicateLimit = 10_000
 let bytesPerKilobyte: Int64 = 1_024
 
-enum KeepRule: String, CaseIterable, Identifiable {
+enum KeepRule: String, CaseIterable, Hashable, Identifiable {
     case original = "Original"
     case shortestName = "Shortest name"
     case oldestFile = "Oldest file"
