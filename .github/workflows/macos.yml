@@ -1,0 +1,51 @@
+name: Build Intel macOS app
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, 'codex/**']
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  intel:
+    runs-on: macos-15-intel
+    timeout-minutes: 360
+    env:
+      MACOSX_DEPLOYMENT_TARGET: '10.15'
+      GDK_BACKEND: macos
+      PYTHONPATH: ${{ github.workspace }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile Catalina-targeted MacPorts dependencies
+        run: bash packaging/macos/provision.sh
+      - name: Record dependency provenance
+        run: |
+          mkdir -p build/macos-evidence
+          /opt/local/bin/port installed > build/macos-evidence/macports-installed.txt
+          cp /opt/local/etc/macports/macports.conf build/macos-evidence/
+          cp /opt/local/etc/macports/variants.conf build/macos-evidence/
+          sw_vers > build/macos-evidence/host.txt
+          xcodebuild -version >> build/macos-evidence/host.txt
+      - name: Shared and native platform tests
+        run: /opt/local/bin/python3.13 scripts/run_tests.py
+      - name: Freeze, audit, accept, and package app
+        run: /opt/local/bin/python3.13 scripts/build_macos.py
+      - name: Upload successful unsigned distribution
+        uses: actions/upload-artifact@v4
+        with:
+          name: CopyFinder-macOS-x86_64
+          path: |
+            dist/macos/*.dmg
+            dist/macos/*.zip
+            dist/macos/*.json
+            dist/macos/SHA256SUMS
+          if-no-files-found: error
+      - name: Upload build evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macOS-build-evidence
+          path: |
+            build/macos-evidence/
+            build/macos/
+          if-no-files-found: ignore
