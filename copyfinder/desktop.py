@@ -6,12 +6,15 @@ import os
 from pathlib import Path
 import platform
 import re
+import sys
 
 import gi
 
 gi.require_version("Gio", "2.0")
 gi.require_version("GLib", "2.0")
 from gi.repository import Gio, GLib
+
+from .macos import DesktopIntegrationError
 
 
 FILE_MANAGER_BUS_NAME = "org.freedesktop.FileManager1"
@@ -27,12 +30,13 @@ NETWORK_FILESYSTEM_TYPES = frozenset({
 MOUNT_ESCAPE_PATTERN = re.compile(r"\\([0-7]{3})")
 
 
-class DesktopIntegrationError(RuntimeError):
-    """A requested desktop action could not be completed."""
-
-
 def trash_file(path: str) -> None:
     """Move one path to native Trash, with no permanent-deletion fallback."""
+    if sys.platform == "darwin":
+        from . import macos
+
+        macos.trash_file(path)
+        return
     try:
         completed = Gio.File.new_for_path(path).trash(None)
     except GLib.Error as error:
@@ -51,6 +55,11 @@ def _reveal_with_file_manager(uri: str) -> None:
 
 def reveal_file(path: str) -> None:
     """Select a file in FileManager1, or open its containing directory."""
+    if sys.platform == "darwin":
+        from . import macos
+
+        macos.reveal_file(path)
+        return
     file = Gio.File.new_for_path(os.path.abspath(path))
     try:
         _reveal_with_file_manager(file.get_uri())
@@ -85,6 +94,10 @@ def _gvfs_roots() -> tuple[str, ...]:
 
 def is_network_path(path: str) -> bool:
     """Best-effort remote classification using GVfs and the deepest mount."""
+    if sys.platform == "darwin":
+        from . import macos
+
+        return macos.is_network_path(path)
     absolute = os.path.abspath(path)
     resolved = os.path.realpath(absolute)
     if any(_is_under(candidate, root) for candidate in (absolute, resolved) for root in _gvfs_roots()):
@@ -121,6 +134,10 @@ def _writable_ancestor(path: Path) -> str:
 
 def compatibility_report() -> str:
     """Describe the current Linux runtime without writing or testing Trash."""
+    if sys.platform == "darwin":
+        from . import macos
+
+        return macos.compatibility_report()
     gi.require_version("Gtk", "4.0")
     from gi.repository import Gtk
 

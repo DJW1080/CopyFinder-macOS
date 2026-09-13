@@ -1,4 +1,4 @@
-"""Memory-bounded, exact-content duplicate scanning for Linux filesystems."""
+"""Memory-bounded, exact-content duplicate scanning for local filesystems."""
 
 from collections import deque
 from concurrent.futures import ThreadPoolExecutor

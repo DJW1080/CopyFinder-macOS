@@ -9,13 +9,15 @@ from pathlib import PurePosixPath
 import stat
 from typing import Callable, Iterator, TYPE_CHECKING
 
+from .runtime import directory_open_flags, file_open_flags
+
 if TYPE_CHECKING:
     from .core import FileRecord
 
 
 HASH_CHUNK_BYTES = 1024 * 1024
-DIRECTORY_OPEN_FLAGS = os.O_PATH | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
-FILE_OPEN_FLAGS = os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK | os.O_CLOEXEC
+DIRECTORY_OPEN_FLAGS = directory_open_flags(prefer_path_handle=True)
+FILE_OPEN_FLAGS = file_open_flags()
 SINGLE_LINK_COUNT = 1
 
 
@@ -97,7 +99,7 @@ def validate_and_trash(record: FileRecord, kept: FileRecord,
     File descriptors remain open across streamed validation and the Trash call.
     All path components reject symlinks. Identity and change metadata are checked
     again immediately before action; the survivor is rehashed afterwards.
-    GIO operates on a pathname, so arbitrary concurrent renames/edits cannot be
+    Native Trash operates on a pathname, so arbitrary concurrent renames/edits cannot be
     locked out atomically. A post-action failure may mean the duplicate is already
     in Trash; callers must report that uncertainty and retain the review row.
     """

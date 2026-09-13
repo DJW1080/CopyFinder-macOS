@@ -304,7 +304,11 @@ class MainWindow(Gtk.ApplicationWindow):
         candidates = [(group, record, group.kept) for group in self.groups for record in group.selected_records()]
         if not candidates or self.busy:
             return
-        network_count = sum(is_network_path(record.path) for _, record, _ in candidates)
+        try:
+            network_count = sum(is_network_path(record.path) for _, record, _ in candidates)
+        except DesktopIntegrationError as error:
+            self.show_message(str(error))
+            return
         detail = (f'{len(candidates):,} selected duplicate file(s) will be validated against the kept file before moving to Trash. '
                   'One file in each group is kept. Files that cannot be moved to Trash will be left in place.')
         if network_count:

@@ -1,4 +1,4 @@
-"""Application entry point for the Linux desktop."""
+"""Application entry point for the native desktop."""
 
 import sys
 from pathlib import Path
@@ -9,6 +9,7 @@ gi.require_version('Gdk', '4.0')
 from gi.repository import Gdk, Gio, GLib, Gtk
 
 from . import VERSION
+from .runtime import platform_label
 from .storage import configure_logging
 from .window import MainWindow
 
@@ -40,7 +41,7 @@ class CopyFinderApplication(Gtk.Application):
 
 def main():
     if '--version' in sys.argv:
-        print(f'CopyFinder {VERSION} (Linux Mint)')
+        print(f'CopyFinder {VERSION} ({platform_label()})')
         return 0
     GLib.set_application_name('CopyFinder')
     GLib.set_prgname('copyfinder')

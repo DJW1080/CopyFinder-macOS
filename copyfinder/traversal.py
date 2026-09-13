@@ -1,4 +1,4 @@
-"""Descriptor-based Linux traversal without following directory or file links."""
+"""Descriptor-based traversal without following directory or file links."""
 
 from dataclasses import dataclass
 import errno
@@ -7,15 +7,17 @@ import stat
 from threading import Event
 from typing import Callable, Iterator
 
-SYSTEM_DIRECTORIES = ("/dev", "/proc", "/sys", "/run")
+from .runtime import directory_open_flags, file_open_flags, path_is_under, system_directories
+
+SYSTEM_DIRECTORIES = system_directories()
 ALWAYS_EXCLUDED_DIRECTORIES = ("/dev", "/proc", "/sys")
 VIRTUAL_FILESYSTEMS = frozenset({
     "proc", "sysfs", "devtmpfs", "devpts", "cgroup", "cgroup2", "securityfs", "debugfs",
     "tracefs", "pstore", "configfs", "mqueue", "hugetlbfs", "fusectl", "bpf", "rpc_pipefs",
     "binfmt_misc", "nsfs", "efivarfs",
 })
-DIRECTORY_OPEN_FLAGS = os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW | os.O_CLOEXEC
-FILE_OPEN_FLAGS = os.O_RDONLY | os.O_NOFOLLOW | os.O_CLOEXEC | os.O_NONBLOCK
+DIRECTORY_OPEN_FLAGS = directory_open_flags()
+FILE_OPEN_FLAGS = file_open_flags()
 MOUNT_ESCAPE_SEQUENCES = {"\\040": " ", "\\011": "\t", "\\012": "\n", "\\134": "\\"}
 MOUNTINFO_PATH_INDEX = 4
 
@@ -112,8 +114,7 @@ def virtual_mounts() -> tuple[str, ...]:
 
 
 def _inside_any(path: str, excluded: tuple[str, ...]) -> bool:
-    return any(path == folder or path.startswith(folder.rstrip(os.sep) + os.sep)
-               for folder in excluded)
+    return any(path_is_under(path, folder) for folder in excluded)
 
 
 def _open_frame(path: str, descriptor: int) -> _DirectoryFrame:

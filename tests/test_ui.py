@@ -3,6 +3,7 @@
 import importlib.util
 import json
 import os
+import sys
 import tempfile
 import time
 import unittest
@@ -12,6 +13,12 @@ from unittest.mock import patch
 GTK_WAIT_SECONDS = 10
 GTK_POLL_SECONDS = 0.005
 TEST_IMAGE_SIZE = (8, 6)
+
+
+def configuration_environment(directory):
+    if sys.platform == 'darwin':
+        return {'COPYFINDER_CONFIG_HOME': str(Path(directory) / 'copyfinder')}
+    return {'XDG_CONFIG_HOME': directory}
 
 
 def iterate_until(predicate):
@@ -34,6 +41,35 @@ def image_record(path):
 
 
 class InterfaceTests(unittest.TestCase):
+    def test_delete_selection_stops_when_volume_classification_is_unavailable(self):
+        import gi
+        gi.require_version('Gtk', '4.0')
+        from gi.repository import Gtk
+        from copyfinder.core import DuplicateGroup, FileRecord
+        from copyfinder.desktop import DesktopIntegrationError
+        from copyfinder.window import MainWindow
+
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+                os.environ, configuration_environment(directory)):
+            Gtk.init()
+            app = Gtk.Application(application_id='au.com.technification.CopyFinder.TestVolume')
+            app.register(None)
+            window = MainWindow(app)
+            records = tuple(FileRecord(str(Path(directory) / name), 3, 1, 1, 1, index + 1, 'abc')
+                            for index, name in enumerate(('keep.txt', 'duplicate.txt')))
+            window.set_groups([DuplicateGroup(1, records)])
+            try:
+                with patch('copyfinder.window.is_network_path',
+                           side_effect=DesktopIntegrationError('Volume could not be classified')), \
+                        patch.object(window, 'show_message') as show_message:
+                    window.confirm_delete()
+                show_message.assert_called_once_with('Volume could not be classified')
+                self.assertFalse(window.busy)
+                self.assertFalse(hasattr(window, '_delete_dialog'))
+            finally:
+                window.results.close()
+                window.destroy()
+
     def test_cached_image_previews_survive_native_row_rebinding(self):
         import gi
         gi.require_version('Gtk', '4.0')
@@ -41,7 +77,8 @@ class InterfaceTests(unittest.TestCase):
         from copyfinder.core import DuplicateGroup
         from copyfinder.previews import decode_preview
         from copyfinder.window import MainWindow
-        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {'XDG_CONFIG_HOME': directory}):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+                os.environ, configuration_environment(directory)):
             records = tuple(image_record(Path(directory) / name) for name in ('first.png', 'second.png'))
             Gtk.init()
             app = Gtk.Application(application_id='au.com.technification.CopyFinder.TestPreviews')
@@ -148,7 +185,7 @@ class InterfaceTests(unittest.TestCase):
         app.register(None)
         for settings in invalid_settings:
             with self.subTest(settings=settings), tempfile.TemporaryDirectory() as directory, \
-                    patch.dict(os.environ, {'XDG_CONFIG_HOME': directory}):
+                    patch.dict(os.environ, configuration_environment(directory)):
                 path = Path(directory) / 'copyfinder/settings.json'
                 path.parent.mkdir()
                 original = json.dumps(settings).encode('utf-8')
@@ -185,7 +222,8 @@ class InterfaceTests(unittest.TestCase):
             'minimum_bytes': 2048, 'skip_hidden': False, 'skip_system': True,
             'excluded_extensions': ['TMP', '.bak'],
         }}
-        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {'XDG_CONFIG_HOME': directory}):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+                os.environ, configuration_environment(directory)):
             path = Path(directory) / 'copyfinder/settings.json'
             path.parent.mkdir()
             path.write_text(json.dumps(settings))
@@ -208,7 +246,8 @@ class InterfaceTests(unittest.TestCase):
         gi.require_version('Gtk', '4.0')
         from gi.repository import GLib, Gtk
         from copyfinder.window import MainWindow
-        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {'XDG_CONFIG_HOME': directory}):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+                os.environ, configuration_environment(directory)):
             fixture = Path(directory) / 'files'
             fixture.mkdir()
             for name in ('a.txt', 'b.txt', 'c.txt'):
@@ -257,7 +296,8 @@ class InterfaceTests(unittest.TestCase):
         from gi.repository import Gtk
         from copyfinder.core import DuplicateGroup, FileRecord
         from copyfinder.window import MainWindow
-        with tempfile.TemporaryDirectory() as directory, patch.dict(os.environ, {'XDG_CONFIG_HOME': directory}):
+        with tempfile.TemporaryDirectory() as directory, patch.dict(
+                os.environ, configuration_environment(directory)):
             Gtk.init()
             app = Gtk.Application(application_id='au.com.technification.CopyFinder.Test')
             app.register(None)

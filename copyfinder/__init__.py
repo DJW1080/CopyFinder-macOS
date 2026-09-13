@@ -1,3 +1,3 @@
-"""CopyFinder: independently implemented for the Linux desktop."""
+"""CopyFinder: an independently implemented native desktop duplicate finder."""
 
 VERSION = '0.1.0'

@@ -90,8 +90,10 @@ class ScannerTests(unittest.TestCase):
         self.assertEqual(len(result.groups[0].files), 2)
 
     def test_case_distinct_names_are_independent(self):
-        self.write("File.txt")
-        self.write("file.txt")
+        upper = self.write("File.txt")
+        lower = self.write("file.txt")
+        if upper.samefile(lower):
+            self.skipTest("The test filesystem is case-insensitive")
         self.assertEqual(len(self.run_scan().groups[0].files), 2)
 
     def test_unicode_newline_and_undecodable_filename(self):

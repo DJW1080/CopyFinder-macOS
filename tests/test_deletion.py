@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -191,6 +192,7 @@ class DeletionTests(unittest.TestCase):
             self.validate(move_and_change)
 
 
+@unittest.skipUnless(sys.platform.startswith("linux"), "Linux GIO and mount integration")
 class DesktopTests(unittest.TestCase):
     def setUp(self):
         self.assertIsNotNone(importlib.util.find_spec("copyfinder.desktop"),

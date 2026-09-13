@@ -3,6 +3,7 @@
 import json
 import logging
 import os
+import sys
 import tempfile
 from logging.handlers import RotatingFileHandler
 from pathlib import Path
@@ -10,6 +11,11 @@ from pathlib import Path
 LOG_MAX_BYTES = 2 * 1024 * 1024
 LOG_BACKUP_COUNT = 2
 APP_DIRECTORY = 'copyfinder'
+MACOS_APP_DIRECTORY = 'CopyFinder'
+MACOS_APPLICATION_SUPPORT = 'Library/Application Support'
+MACOS_LOGS = 'Library/Logs'
+APP_CONFIG_OVERRIDE = 'COPYFINDER_CONFIG_HOME'
+APP_STATE_OVERRIDE = 'COPYFINDER_STATE_HOME'
 
 
 def xdg_directory(variable, fallback):
@@ -19,11 +25,22 @@ def xdg_directory(variable, fallback):
 
 
 def settings_path():
+    if sys.platform == 'darwin':
+        return native_directory(APP_CONFIG_OVERRIDE, MACOS_APPLICATION_SUPPORT) / 'settings.json'
     return xdg_directory('XDG_CONFIG_HOME', '.config') / 'settings.json'
 
 
 def state_directory():
+    if sys.platform == 'darwin':
+        return native_directory(APP_STATE_OVERRIDE, MACOS_LOGS)
     return xdg_directory('XDG_STATE_HOME', '.local/state')
+
+
+def native_directory(override_variable, library_directory):
+    configured = Path(os.environ.get(override_variable, ''))
+    if configured.is_absolute():
+        return configured
+    return Path.home() / library_directory / MACOS_APP_DIRECTORY
 
 
 def atomic_write(path, content):

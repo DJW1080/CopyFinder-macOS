@@ -7,6 +7,7 @@ gi.require_version('Gtk', '4.0')
 from gi.repository import Gtk
 
 from .core import ScanOptions
+from .runtime import system_directories
 
 KEEP_RULES = ('Original', 'Shortest name', 'Oldest file', 'Newest file', 'Folder', 'Highest Resolution')
 BYTES_PER_KILOBYTE = 1024
@@ -47,7 +48,9 @@ class SettingsPanel(Gtk.Box):
         self.hidden = Gtk.CheckButton(label='Skip hidden files', active=options.skip_hidden)
         self.hidden.set_tooltip_text('Skip dotfiles and hidden directories.')
         self.system = Gtk.CheckButton(label='Skip system files', active=options.skip_system)
-        self.system.set_tooltip_text('Skip /dev, /proc, /sys and /run. Links and special files are always excluded.')
+        excluded_locations = ', '.join(system_directories())
+        self.system.set_tooltip_text(
+            f'Skip {excluded_locations}. Links and special files are always excluded.')
         for controls in (
             [('Keep', self.keep_rule), ('Folder', self.preferred), ('Workers', self.workers)],
             [('Limit', self.limit), ('Min KB', self.minimum), ('Exclude', self.exclude)],
