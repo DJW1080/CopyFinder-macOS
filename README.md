@@ -1,5 +1,7 @@
 # CopyFinder for MacOS 10.15.8 Catalina 
 
+![CopyFinder](Technification/Logo/CopyFinder-Banner-08.png)
+
 ![Intel](https://img.shields.io/badge/CPU-Intel-31c5f3?logo=intel "Intel Compatible")
 ![AMD](https://img.shields.io/badge/CPU-AMD-00a774?logo=amd "AMD Compatible")
 ![Made in Melbourne](https://img.shields.io/badge/🌏%20Made%20in-Melbourne-FFB6C1?style=flat "Made in Melbourne")
